@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>使用成本 Pro v2</title>
+<style>
+:root{--p:#007AFF;--bg:#F2F2F7;--c:#FFF;--t:#1C1C1E;--s:#8E8E93;--r:#FF3B30;--o:#FF9500;--g:#34C759}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;user-select:none}
+body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--t);padding:15px;padding-bottom:80px;min-height:100vh;overflow-x:hidden}
+.box{max-width:600px;margin:0 auto}
+.card{background:var(--c);border-radius:16px;padding:15px;margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,.03);position:relative;will-change:transform}
+.btn{border:none;border-radius:10px;padding:12px;font-weight:600;cursor:pointer;width:100%;font-size:15px;margin-top:10px;transition:.2s}
+.btn:active{opacity:.8;transform:scale(.98)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-p{background:var(--p);color:#fff}.btn-o{background:var(--o);color:#fff}.btn-g{background:var(--g);color:#fff}
+.flex-bet{display:flex;justify-content:space-between;align-items:center}
+.stat-box{color:#fff;display:flex;padding:20px;border-radius:16px;margin-bottom:15px;background:linear-gradient(135deg,#333,#000)}
+.stat-i{flex:1;text-align:center}.stat-v{font-size:22px;font-weight:700;display:block}.stat-l{font-size:11px;opacity:.8}
+.item-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5;position:relative;background:#fff}
+.item-img{width:40px;height:40px;border-radius:8px;background:#eee;margin-right:10px;object-fit:cover;flex-shrink:0;cursor:zoom-in}
+.item-info{flex:1;overflow:hidden}.item-n{font-weight:600;font-size:16px}.item-d{font-size:12px;color:var(--s)}
+.item-c{text-align:right;flex-shrink:0}.cost-day{font-size:12px;color:var(--p);font-weight:600}
+.fab-group{position:fixed;bottom:30px;right:30px;display:flex;flex-direction:column;gap:10px;z-index:90}
+.fab{width:50px;height:50px;border-radius:50%;font-size:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.2);cursor:pointer;color:#fff}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:99;display:none;align-items:center;justify-content:center}
+.m-cnt{background:#fff;width:85%;max-width:360px;border-radius:16px;padding:20px;max-height:90vh;overflow-y:auto}
+.inp{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;font-size:16px;outline:none}
+.file-area{background:#f0f0f0;padding:10px;border-radius:10px;margin-bottom:10px;position:relative;display:flex;align-items:center;justify-content:center;gap:10px}
+.file-btn-real{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0}
+.view{display:none}.show{display:block}
+.car-h{background:#fff;padding:10px;border-radius:12px;margin-bottom:10px;display:flex;align-items:center;color:var(--p);font-weight:600;cursor:pointer}
+.tabs{display:flex;background:#E5E5EA;border-radius:10px;padding:3px;margin-bottom:15px}
+.tab{flex:1;text-align:center;padding:8px;font-size:14px;font-weight:600;color:var(--s);border-radius:8px;transition:.2s}
+.tab.act{background:#fff;color:var(--t);box-shadow:0 2px 4px rgba(0,0,0,.1)}
+.bg-b{background:linear-gradient(135deg,#007AFF,#0055FF)}.bg-o{background:linear-gradient(135deg,#FF9500,#FF5E3A)}
+.inp-w{background:#F2F2F7;border-radius:10px;display:flex;align-items:center;padding:0 12px;margin-bottom:10px}
+.inp-w input{flex:1;border:none;background:0 0;padding:10px 0;font-size:16px;font-weight:600;outline:none}
+.h-it{padding:10px;border-left:4px solid transparent;margin-bottom:8px;background:#f9f9f9;border-radius:8px;position:relative;cursor:pointer;transition:.2s}
+.h-it:active{background:#eee}
+.h-it.f{border-color:var(--p)}.h-it.m{border-color:var(--o)}
+.del{position:absolute;right:10px;bottom:5px;color:#ddd;font-size:18px;z-index:2}
+textarea.code-box{width:100%;height:100px;border:1px solid #eee;background:#f9f9f9;border-radius:8px;padding:10px;font-size:12px;word-break:break-all}
+#ctxMenu{position:absolute;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,.15);border-radius:8px;padding:5px;display:none;z-index:100;min-width:130px}
+.ctx-item{padding:10px;font-size:14px;color:var(--t);cursor:pointer;border-radius:4px}
+.ctx-item:hover{background:#f5f5f5}
+.ctx-del{color:var(--r)}
+#vImg{z-index:110;background:#000;flex-direction:column}
+#bigImg{max-width:100%;max-height:60vh;object-fit:contain;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+</style>
+</head>
+<body>
+
+<input type="file" id="upHid" accept="image/*" style="display:none" onchange="doModImg(this)">
+
+<div id="vMain" class="view show box">
+    <div class="stat-box">
+        <div class="stat-i"><span id="allCost" class="stat-v">0.00</span><span class="stat-l">总支出</span></div>
+        <div style="width:1px;background:rgba(255,255,255,.3);margin:0 10px"></div>
+        <div class="stat-i"><span id="allDay" class="stat-v">0.00</span><span class="stat-l">日均成本</span></div>
+    </div>
+    <div id="list" onclick="hideCtx()"></div>
+    <div class="fab-group">
+        <div class="fab" style="background:var(--g)" onclick="modSync(1)">⇄</div>
+        <div class="fab" style="background:var(--t)" onclick="mod(1)">+</div>
+    </div>
+</div>
+
+<div id="vCar" class="view box">
+    <div class="car-h" onclick="swV(0)">‹ <span id="curCarN">返回</span></div>
+    <div class="tabs">
+        <div class="tab act" onclick="swT(0)" id="tb0">加油</div>
+        <div class="tab" onclick="swT(1)" id="tb1">保养</div>
+        <div class="tab" onclick="swT(2)" id="tb2">数据</div>
+    </div>
+    <div id="cv0" class="view show">
+        <div class="stat-box bg-b"><div class="stat-i"><span id="cL100" class="stat-v">--</span><span class="stat-l">平均 L/100</span></div><div class="stat-i"><span id="cPerKm" class="stat-v">--</span><span class="stat-l">油费 /km</span></div></div>
+        <div class="card">
+            <div class="inp-w"><input type="number" id="cOdo" placeholder="当前里程 (km)"></div>
+            <div class="inp-w"><input type="number" id="cCost" placeholder="金额 (元)"></div>
+            <div class="inp-w"><input type="number" id="cVol" placeholder="油量 (L)"></div>
+            <button id="btnF" class="btn btn-p" onclick="addF()">记一笔</button>
+            <div id="tipF" style="text-align:center;font-size:12px;color:var(--s);margin-top:5px;display:none"><a href="javascript:rstF()" style="color:var(--r)">取消修改</a></div>
+        </div>
+        <div id="fList"></div>
+    </div>
+    <div id="cv1" class="view">
+        <div class="stat-box bg-o"><div class="stat-i"><span id="mTot" class="stat-v">0.00</span><span class="stat-l">保养总花费</span></div></div>
+        <div class="card">
+            <div class="inp-w"><input type="text" id="mN" placeholder="项目名称"></div>
+            <div class="inp-w"><input type="number" id="mC" placeholder="费用 (元)"></div>
+            <button id="btnM" class="btn btn-o" onclick="addM()">记保养</button>
+            <div id="tipM" style="text-align:center;font-size:12px;color:var(--s);margin-top:5px;display:none"><a href="javascript:rstM()" style="color:var(--r)">取消修改</a></div>
+        </div>
+        <div id="mList"></div>
+    </div>
+    <div id="cv2" class="view">
+        <div class="card">
+            <label style="font-size:12px;color:#888">购车费用/日期</label>
+            <div class="inp-w"><input type="number" id="carP" onchange="upCP()" placeholder="车价"></div>
+            <div class="inp-w"><input type="date" id="carD" onchange="upCP()"></div>
+        </div>
+        <div class="card">
+            <div class="item-row"><span>🚙 购车</span><span id="dCarP" style="font-weight:700;margin-left:auto">0.00</span></div>
+            <div class="item-row"><span>⛽ 油费</span><span id="dCarF" style="font-weight:700;margin-left:auto">0.00</span></div>
+            <div class="item-row"><span>🛠️ 保养</span><span id="dCarM" style="font-weight:700;margin-left:auto">0.00</span></div>
+            <div style="border-top:1px dashed #eee;margin:10px 0"></div>
+            <div class="item-row"><span style="font-weight:700">总支出</span><span id="dCarT" style="color:var(--r);font-weight:700;margin-left:auto">0.00</span></div>
+            <div class="item-row"><span>日均</span><span id="dCarDay" style="color:var(--p);font-weight:700;margin-left:auto">0.00</span></div>
+        </div>
+    </div>
+</div>
+
+<div id="modal" class="modal">
+    <div class="m-cnt">
+        <h3>添加资产</h3><br>
+        <input type="text" id="nName" class="inp" placeholder="名称">
+        <input type="number" id="nCost" class="inp" placeholder="金额 (元)">
+        <input type="date" id="nDate" class="inp">
+        <div class="file-area">
+            <span id="fTxt">📷 上传照片</span>
+            <input type="file" accept="image/*" onchange="onImg(this)" class="file-btn-real">
+        </div>
+        <div style="margin-bottom:10px;font-size:14px;color:var(--s)"><input type="checkbox" id="isCar"> 是汽车 (启用油耗)</div>
+        <button id="btnAdd" class="btn btn-p" onclick="addIt()">确定</button>
+        <button class="btn" style="background:#eee" onclick="mod(0)">取消</button>
+    </div>
+</div>
+
+<div id="mSync" class="modal">
+    <div class="m-cnt">
+        <h3>数据同步</h3>
+        <textarea id="syncCode" class="code-box" placeholder="数据码..."></textarea>
+        <button class="btn btn-p" onclick="expD()">📤 导出本机数据</button>
+        <button class="btn btn-g" onclick="impD()">📥 导入数据</button>
+        <button class="btn" style="background:#eee" onclick="modSync(0)">关闭</button>
+    </div>
+</div>
+
+<div id="vImg" class="modal">
+    <img id="bigImg">
+    <div style="margin-top:20px;display:flex;gap:15px">
+        <button class="btn btn-p" style="width:auto;padding:10px 25px;margin:0" onclick="modImg()">🖼️ 更换图片</button>
+        <button class="btn" style="width:auto;padding:10px 25px;background:#333;color:#fff;margin:0" onclick="closeImg()">关闭</button>
+    </div>
+</div>
+
+<div id="ctxMenu">
+    <div class="ctx-item" onclick="renCur()">✎ 重命名</div>
+    <div class="ctx-item" onclick="modDate()">📅 修改日期</div>
+    <div class="ctx-item" onclick="modCost()">💰 修改金额</div>
+    <div class="ctx-item" onclick="modImg()">🖼️ 修改图片</div>
+    <div class="ctx-item ctx-del" onclick="delCur()">🗑️ 删除此项</div>
+</div>
+
+<script>
+const $=i=>document.getElementById(i);
+const fmt=n=>parseFloat(n||0).toFixed(2);
+let D={items:[]}, tmpImg='', ctxIdx=-1, cur=-1;
+
+window.onload=()=>{
+    let s=localStorage.getItem('ucost_pro_v5');
+    if(s)try{D=JSON.parse(s)}catch(e){}
+    if(!D.items)D.items=[];
+    rMain(); document.addEventListener('click',hideCtx);
+}
+
+function sv(){localStorage.setItem('ucost_pro_v5',JSON.stringify(D));rMain()}
+function mod(s){$('modal').style.display=s?'flex':'none';if(s){$('nDate').valueAsDate=new Date();tmpImg='';$('fTxt').innerText='📷 上传照片'}}
+function modSync(s){$('mSync').style.display=s?'flex':'none';$('syncCode').value=''}
+function swV(v,idx){
+    if(v){ cur=idx; $('curCarN').innerText=D.items[cur].n; rstF(); rstM(); rCar(); }
+    $('vMain').className=v?'view':'view show'; $('vCar').className=v?'view show':'view';
+}
+function swT(i){[0,1,2].forEach(x=>{$('tb'+x).className=x==i?'tab act':'tab';$('cv'+x).className=x==i?'view show':'view'})}
+
+function txtImg(t){
+    let c=document.createElement('canvas'),x=c.getContext('2d');c.width=150;c.height=150;
+    x.fillStyle=['#FF9500','#007AFF','#AF52DE','#FF3B30','#34C759'][Math.floor(Math.random()*5)];
+    x.fillRect(0,0,150,150);x.fillStyle='#FFF';x.font='bold 80px sans-serif';x.textAlign='center';x.textBaseline='middle';
+    x.fillText(t?t[0].toUpperCase():'?',75,75);return c.toDataURL('image/jpeg',0.7);
+}
+
+function onImg(e){
+    let f=e.files[0];if(!f)return;
+    let r=new FileReader();
+    r.onload=x=>{
+        let i=new Image();i.src=x.target.result;
+        i.onload=()=>{
+            let c=document.createElement('canvas'),ctx=c.getContext('2d'),w=100,h=100*(i.height/i.width);
+            c.width=w;c.height=h;ctx.drawImage(i,0,0,w,h);
+            tmpImg=c.toDataURL('image/jpeg',0.6);
+            $('fTxt').innerText='✅ 已选择';
+        }
+    };r.readAsDataURL(f);
+}
+
+function addIt(){
+    let n=$('nName').value,c=parseFloat($('nCost').value),d=$('nDate').value,isC=$('isCar').checked;
+    if(!n||!c||!d)return alert('填全信息');
+    if(!tmpImg) tmpImg = txtImg(n);
+    if(isC) D.items.push({id:Date.now(),type:'car',n:n,d:d,img:tmpImg,p:c,f:[],m:[]});
+    else D.items.push({id:Date.now(),type:'gen',n:n,c:c,d:d,img:tmpImg});
+    mod(0);$('nName').value='';$('nCost').value='';$('isCar').checked=false;sv();
+}
+
+function getDays(d){return Math.max(1,Math.floor((new Date()-new Date(d))/(86400000)))}
+
+function rMain(){
+    let l=$('list'), tC=0, tD=0; l.innerHTML='';
+    D.items.forEach((x,i)=>{
+        let cost=x.type=='car' ? (x.p+(x.f?x.f.reduce((a,b)=>a+b.c,0):0)+(x.m?x.m.reduce((a,b)=>a+b.c,0):0)) : x.c;
+        let dys=getDays(x.d), dayC=cost/dys;
+        tC+=cost; tD+=dayC;
+        let el=document.createElement('div'); el.className='card item-row';
+        el.innerHTML=`<img src="${x.img}" class="item-img" onclick="event.stopPropagation();showImg(${i})"><div class="item-info"><div class="item-n">${x.n} ${x.type=='car'?'🚗':''}</div><div class="item-d">${x.d} (${dys}天)</div></div>
+        <div class="item-c"><div>¥${fmt(cost)}</div><div class="cost-day">¥${fmt(dayC)}/天</div></div>`;
+        
+        let tx=0,ty=0,dx=0,swp=0;
+        el.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;el.style.transition='none';swp=0},{passive:true});
+        el.addEventListener('touchmove',e=>{
+            let cx=e.touches[0].clientX,cy=e.touches[0].clientY;
+            dx=cx-tx;
+            if(dx<0&&Math.abs(dx)>Math.abs(cy-ty)){
+                e.preventDefault();
+                swp=1;
+                el.style.transform=`translateX(${dx}px)`;
+            }
+        },{passive:false});
+        el.addEventListener('touchend',e=>{
+            el.style.transition='transform .2s';
+            if(dx<-100){
+                if(confirm('确认删除 "'+x.n+'" ?')){
+                    el.style.transform='translateX(-100%)';
+                    setTimeout(()=>{D.items.splice(i,1);sv()},200);
+                }else el.style.transform='translateX(0)';
+            }else el.style.transform='translateX(0)';
+            dx=0;
+        });
+        
+        if(x.type=='car') el.onclick=()=>{if(!swp)swV(1,i)};
+        el.oncontextmenu=(e)=>{e.preventDefault();showCtx(e,i)};
+        l.appendChild(el);
+    });
+    $('allCost').innerText=fmt(tC); $('allDay').innerText=fmt(tD);
+}
+
+function showImg(i){ctxIdx=i;$('bigImg').src=D.items[i].img;$('vImg').style.display='flex'}
+function closeImg(){$('vImg').style.display='none'}
+
+function showCtx(e,i){let m=$('ctxMenu');ctxIdx=i;m.style.display='block';m.style.left=e.pageX+'px';m.style.top=e.pageY+'px'}
+function hideCtx(){$('ctxMenu').style.display='none'}
+function delCur(){if(ctxIdx>-1&&confirm('确认删除?')){D.items.splice(ctxIdx,1);sv()}hideCtx()}
+function renCur(){if(ctxIdx<0)return;let x=D.items[ctxIdx],n=prompt('新名称',x.n);if(n){x.n=n;if(x.img.startsWith('data:'))x.img=txtImg(n);sv()}hideCtx()}
+function modDate(){if(ctxIdx<0)return;let x=D.items[ctxIdx],d=prompt('新日期 (YYYY-MM-DD)',x.d);if(d){x.d=d;sv()}hideCtx()}
+function modCost(){
+    if(ctxIdx<0)return;let x=D.items[ctxIdx],old=x.type=='car'?x.p:x.c;
+    let n=prompt(x.type=='car'?'修改购车费用':'修改金额',old);
+    if(n!=null){n=parseFloat(n)||0;if(x.type=='car')x.p=n;else x.c=n;sv()}hideCtx();
+}
+function modImg(){if(ctxIdx<0)return;hideCtx();$('upHid').click()}
+function doModImg(e){
+    let f=e.files[0];if(!f)return;
+    let r=new FileReader();
+    r.onload=x=>{
+        let i=new Image();i.src=x.target.result;
+        i.onload=()=>{
+            let c=document.createElement('canvas'),ctx=c.getContext('2d'),w=100,h=100*(i.height/i.width);
+            c.width=w;c.height=h;ctx.drawImage(i,0,0,w,h);
+            D.items[ctxIdx].img=c.toDataURL('image/jpeg',0.6);
+            if($('vImg').style.display=='flex')$('bigImg').src=D.items[ctxIdx].img;
+            sv();
+        }
+    };r.readAsDataURL(f);e.value='';
+}
+
+/* --- 修改开始: 增加每笔油耗计算逻辑 --- */
+function rCar(){
+    if(cur<0||!D.items[cur])return;
+    let x=D.items[cur];
+    $('carP').value=x.p; $('carD').value=x.d;
+    x.f.sort((a,b)=>b.o - a.o);
+    let tf=0,td=0,tv=0;
+    
+    // 生成列表
+    $('fList').innerHTML=x.f.map((r,i,a)=>{
+        let p=a[i+1], d=p ? r.o-p.o : 0; // p是上一次加油记录(里程更小)
+        let thisL100 = 0;
+        
+        // 计算逻辑：如果里程差>0，则本次加油量 r.v 是为了补充这 d 公里的消耗
+        if(d>0){
+            td+=d; tv+=r.v; tf+=r.c;
+            thisL100 = (r.v / d) * 100;
+        }
+        
+        let infoLine = `里程:${r.o}`;
+        if(d>0) {
+            infoLine += ` | +${d}km <b style="color:var(--o);margin-left:5px">${fmt(thisL100)} L/100</b>`;
+        }
+
+        return `<div class="h-it f" onclick="edF(${r.id})">
+            <div class="flex-bet"><span>${r.date}</span><b>¥${fmt(r.c)}</b></div>
+            <div style="font-size:12px;color:#666">${infoLine}</div>
+            <div class="del" onclick="event.stopPropagation();delSub('f',${r.id})">×</div>
+        </div>`
+    }).join('');
+    
+    // 全局平均
+    $('cL100').innerText=td>0?fmt(tv/td*100):'--'; 
+    $('cPerKm').innerText=td>0?fmt(tf/td):'--';
+    
+    let tm=0;
+    $('mList').innerHTML=x.m.map(r=>{tm+=r.c;return `<div class="h-it m" onclick="edM(${r.id})"><div class="flex-bet"><span>${r.n}</span><b style="color:var(--o)">¥${fmt(r.c)}</b></div><div style="font-size:12px;color:#999">${r.date} (点击修改)</div><div class="del" onclick="event.stopPropagation();delSub('m',${r.id})">×</div></div>`}).join('');
+    $('mTot').innerText=fmt(tm);
+    let ft=x.f.reduce((a,b)=>a+b.c,0), tot=x.p+ft+tm;
+    $('dCarP').innerText=fmt(x.p); $('dCarF').innerText=fmt(ft); $('dCarM').innerText=fmt(tm); $('dCarT').innerText=fmt(tot);
+    $('dCarDay').innerText=x.d ? '¥ '+fmt(tot/getDays(x.d)) : '--';
+}
+/* --- 修改结束 --- */
+
+function addF(){let o=parseFloat($('cOdo').value),c=parseFloat($('cCost').value),v=parseFloat($('cVol').value),x=D.items[cur];if(!o||!c||!v)return alert('填全');if(x.f.length&&o<=x.f[0].o)return alert('里程错');x.f.unshift({id:Date.now(),date:new Date().toLocaleDateString(),o:o,c:c,v:v});rstF();sv();rCar()}
+function updF(id){let o=parseFloat($('cOdo').value),c=parseFloat($('cCost').value),v=parseFloat($('cVol').value),x=D.items[cur].f.find(k=>k.id==id);if(x){x.o=o;x.c=c;x.v=v;rstF();sv();rCar()}}
+function edF(id){let r=D.items[cur].f.find(x=>x.id==id);$('cOdo').value=r.o;$('cCost').value=r.c;$('cVol').value=r.v;let b=$('btnF');b.innerText='保存修改';b.className='btn btn-g';b.onclick=()=>updF(id);$('tipF').style.display='block'}
+function rstF(){$('cOdo').value='';$('cCost').value='';$('cVol').value='';let b=$('btnF');b.innerText='记一笔';b.className='btn btn-p';b.onclick=addF;$('tipF').style.display='none'}
+
+function addM(){let n=$('mN').value,c=parseFloat($('mC').value),x=D.items[cur];if(!n||!c)return alert('填全');x.m.unshift({id:Date.now(),date:new Date().toLocaleDateString(),n:n,c:c});rstM();sv();rCar()}
+function updM(id){let n=$('mN').value,c=parseFloat($('mC').value),x=D.items[cur].m.find(k=>k.id==id);if(x){x.n=n;x.c=c;rstM();sv();rCar()}}
+function edM(id){let r=D.items[cur].m.find(x=>x.id==id);$('mN').value=r.n;$('mC').value=r.c;let b=$('btnM');b.innerText='保存修改';b.className='btn btn-g';b.onclick=()=>updM(id);$('tipM').style.display='block'}
+function rstM(){$('mN').value='';$('mC').value='';let b=$('btnM');b.innerText='记保养';b.className='btn btn-o';b.onclick=addM;$('tipM').style.display='none'}
+
+function delSub(t,id){if(confirm('删?')){let x=D.items[cur];if(t=='f')x.f=x.f.filter(r=>r.id!=id);else x.m=x.m.filter(r=>r.id!=id);sv();rCar()}}
+function upCP(){let x=D.items[cur];x.p=parseFloat($('carP').value)||0;x.d=$('carD').value;sv();rCar()}
+function expD(){let s=JSON.stringify(D);$('syncCode').value=btoa(encodeURIComponent(s));$('syncCode').select();document.execCommand('copy');alert('已复制')}
+function impD(){let s=$('syncCode').value;if(!s)return;try{let j=decodeURIComponent(atob(s));if(confirm('覆盖?')){D=JSON.parse(j);sv();alert('成功');modSync(0)}}catch(e){alert('无效')}}
+</script>
+</body>
+</html>
